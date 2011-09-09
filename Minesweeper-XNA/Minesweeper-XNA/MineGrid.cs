@@ -114,12 +114,13 @@ namespace Minesweeper_XNA
                 {
                     m.MinePressed(gameTime);
                     selectedMine = m;
+                    isLeftButtonPressed = true;
                 }
             }
             else if (state.LeftButton == ButtonState.Released)
             {
                 // uncover current grid item unless cursor is no longer over grid item
-                if (m == selectedMine)
+                if (m == selectedMine && isLeftButtonPressed)
                 {
                     m.MineReleased(gameTime, true);
                     selectedMine = tempMine;
