@@ -10,10 +10,16 @@ namespace Minesweeper_XNA
 {
     public class MineGrid : DrawableGameComponent
     {
-        private Mine[,] grid = new Mine[3,3];
+        int gridSize = 5;
+        int tileSize = 64;
+        int gridOffset = 50;
+        private Mine[,] grid = new Mine[6,6];
         private Texture2D uncoveredGridItem;
         private Texture2D hiddenGridItem;
         private SpriteFont font;
+
+        private bool isRightButtonPressed = false;
+        private bool isLeftButtonPressed = false;
 
         private SpriteBatch spriteBatch;
 
@@ -25,25 +31,52 @@ namespace Minesweeper_XNA
 
         public override void Initialize()
         {
+            
             // initialize 3x3 grid with 1 mine
-            Random rnd = new Random();
-            int mineX = rnd.Next(0, 2);
-            int mineY = rnd.Next(0, 2);
+            //Random rnd = new Random();
+            int[] mine1 = { 2, 1 };
+            int[] mine2 = { 4, 1 };
+            int[] mine3 = { 1, 3 };
+            int[] mine4 = { 4, 4 };            
 
-            for (int i = 0; i <= 2; i++)
+            for (int i = 0; i <= gridSize; i++)
             {
-                for (int j = 0; j <= 2; j++)
+                for (int j = 0; j <= gridSize; j++)
                 {
-                    Mine m;
-                    if (i == mineX && j == mineY)
+                    bool t;
+                    if ((i == mine1[0] && j == mine1[1]) ||
+                        (i == mine2[0] && j == mine2[1]) ||
+                        (i == mine3[0] && j == mine3[1]) ||
+                        (i == mine4[0] && j == mine4[1]))
                     {
-                        m = new Mine(true);
+                        t = true;
                     }
                     else
                     {
-                        m = new Mine(false);
+                        t = false;
                     }
+                    Mine m = new Mine(Game, t, gridOffset + i * tileSize, gridOffset + j * tileSize);
                     grid[i, j] = m;
+                    Game.Components.Add(m);
+                }
+            }
+
+            for (int i = 0; i <= gridSize; i++)
+            {
+                for (int j = 0; j <= gridSize; j++)
+                {
+                    Mine m = grid[i, j];
+                    for (int k = i - 1; k <= i + 1; k++)
+                    {
+                        for (int l = j - 1; l <= j + 1; l++)
+                        {
+                            if (k < 0 || l < 0 || k > gridSize || l > gridSize || (i == k && j == l))
+                                continue;
+                            Mine t = grid[k, l];
+                            if (t.IsMine)
+                                m.SurroundingMines++;
+                        }
+                    }
                 }
             }
 
@@ -62,19 +95,38 @@ namespace Minesweeper_XNA
         public override void Update(GameTime gameTime)
         {
             MouseState state = Mouse.GetState();
+            // figure out position of mouse click
+            int x = (state.X - gridOffset) / tileSize;
+            int y = (state.Y - gridOffset) / tileSize;
+            Mine m = null;
+            if (!(x < 0 || x > gridSize || y < 0 || y > gridSize))
+                m = grid[x, y];
+
             if (state.LeftButton == ButtonState.Pressed)
             {
                 // change state to down but not pressed
+                // dont if there its flagged
+                if (m != null)
+                    m.MinePressed(gameTime);
             }
             else if (state.LeftButton == ButtonState.Released)
             {
                 // uncover current grid item unless cursor is no longer over grid item
             }
-            else if (state.RightButton == ButtonState.Released)
+            if (state.RightButton == ButtonState.Pressed)
+            {
+                isRightButtonPressed = true;
+            }
+            if (state.RightButton == ButtonState.Released)
             {
                 // place flag
+                if (m != null && isRightButtonPressed)
+                {
+                    m.MineFlagged(gameTime);
+                    isRightButtonPressed = false;
+                }
             }
-            else if (state.LeftButton == ButtonState.Released &&
+            if (state.LeftButton == ButtonState.Released &&
                      state.RightButton == ButtonState.Released)
             {
                 // if number matches number of flags, uncover surrounding grid items
@@ -88,19 +140,6 @@ namespace Minesweeper_XNA
             base.Draw(gameTime);
             int gridSize = hiddenGridItem.Height;
             spriteBatch.Begin();
-
-            for (int i = 0; i < grid.GetLength(0); i++)
-            {
-                for (int j = 0; i < grid.GetLength(1); j++)
-                {
-                    spriteBatch.Draw(hiddenGridItem, 
-                                     new Rectangle(100 + i * gridSize,
-                                                   100 + j * gridSize,
-                                                   gridSize,
-                                                   gridSize),
-                                     Color.White);
-                }
-            }
 
             spriteBatch.End();
         }

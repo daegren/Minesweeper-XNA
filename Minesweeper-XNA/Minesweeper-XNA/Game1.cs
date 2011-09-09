@@ -18,6 +18,8 @@ namespace Minesweeper_XNA
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        SpriteFont font;
+        String mousePos = "0,0";
 
         MousePointer mousePointer;
         MineGrid grid;
@@ -67,6 +69,7 @@ namespace Minesweeper_XNA
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here            
+            font = Content.Load<SpriteFont>("console");
         }
 
         /// <summary>
@@ -89,7 +92,8 @@ namespace Minesweeper_XNA
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
 
-            // TODO: Add your update logic here            
+            // TODO: Add your update logic here     
+            mousePos = string.Format("{0}, {1}", Mouse.GetState().X, Mouse.GetState().Y);
 
             base.Update(gameTime);
         }
@@ -103,6 +107,9 @@ namespace Minesweeper_XNA
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
+            spriteBatch.Begin();
+            spriteBatch.DrawString(font, mousePos, new Vector2(500, 100), Color.White);
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }
