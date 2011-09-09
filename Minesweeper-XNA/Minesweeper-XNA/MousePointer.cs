@@ -35,6 +35,7 @@ namespace Minesweeper_XNA
         protected override void LoadContent()
         {
             this.spriteBatch = new SpriteBatch(this.GraphicsDevice);
+            PointerTexture = Game.Content.Load<Texture2D>("Cursor");
             base.LoadContent();
         }
 

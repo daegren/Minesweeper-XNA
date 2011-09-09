@@ -20,6 +20,7 @@ namespace Minesweeper_XNA
         SpriteBatch spriteBatch;
 
         MousePointer mousePointer;
+        MineGrid grid;
 
         public Game1()
         {
@@ -37,12 +38,21 @@ namespace Minesweeper_XNA
         {
             // TODO: Add your initialization logic here
             this.Window.Title = "Minesweeper";
-            this.mousePointer = new MousePointer(this);
-            this.mousePointer.DrawOrder = 1000;
-            this.mousePointer.RestrictZone = new Rectangle(0, 0,
-                this.GraphicsDevice.Viewport.Width,
-                this.GraphicsDevice.Viewport.Height);
-            this.Components.Add(mousePointer);
+
+            // custom mouse pointer
+            mousePointer = new MousePointer(this);
+            mousePointer.DrawOrder = 1000;
+            mousePointer.RestrictZone = new Rectangle(0, 0,
+                GraphicsDevice.Viewport.Width,
+                GraphicsDevice.Viewport.Height);
+            Components.Add(mousePointer);
+
+            //mine grid
+            grid = new MineGrid(this);
+            grid.DrawOrder = 0;
+
+            Components.Add(grid);
+
             base.Initialize();
             
         }
@@ -56,8 +66,7 @@ namespace Minesweeper_XNA
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
-            this.mousePointer.PointerTexture = Content.Load<Texture2D>("Arrow");
+            // TODO: use this.Content to load your game content here            
         }
 
         /// <summary>
