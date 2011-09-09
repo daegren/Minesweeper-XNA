@@ -17,6 +17,9 @@ namespace Minesweeper_XNA
         private Texture2D visibleTexture;
         private SpriteFont consoleFont;
         private Texture2D flagTexture;
+        private Texture2D questionTexture;
+        private Texture2D mineTexture;
+
         private SpriteBatch spriteBatch;
         private int surroundingMines;
 
@@ -50,6 +53,8 @@ namespace Minesweeper_XNA
             hiddenTexture = cm.Load<Texture2D>("grid-unknown");
             visibleTexture = cm.Load<Texture2D>("grid-0");
             flagTexture = cm.Load<Texture2D>("grid-flag");
+            questionTexture = cm.Load<Texture2D>("grid-question");
+            mineTexture = cm.Load<Texture2D>("mine");
             consoleFont = cm.Load<SpriteFont>("console");
             base.LoadContent();
         }
@@ -62,10 +67,12 @@ namespace Minesweeper_XNA
                 tex = hiddenTexture;
             else if (mineState == MineState.HiddenFlaged)
                 tex = flagTexture;
-            else if (mineState == Minesweeper_XNA.MineState.UncoveredNone)
+            else if (mineState == Minesweeper_XNA.MineState.UncoveredNone ||
+                     mineState == Minesweeper_XNA.MineState.UncoveredMine ||
+                     mineState == Minesweeper_XNA.MineState.HiddenSelected)
                 tex = visibleTexture;
-            else if (mineState == Minesweeper_XNA.MineState.UncoveredMine)
-                tex = flagTexture;
+            else if (mineState == Minesweeper_XNA.MineState.HiddenQuestion)
+                tex = questionTexture;            
 
             if (surroundingMines == 1)
                 c = Color.Blue;
@@ -78,7 +85,9 @@ namespace Minesweeper_XNA
                     
             spriteBatch.Begin();
             spriteBatch.Draw(tex, gridPos, Color.White);
-            Vector2 a = new Vector2(gridPos.X + 16, gridPos.Y + 16);
+            Vector2 a = new Vector2(gridPos.X + 8, gridPos.Y + 8);
+            if (isMine && mineState == Minesweeper_XNA.MineState.UncoveredMine)
+                spriteBatch.Draw(mineTexture, a, Color.White);
             spriteBatch.DrawString(consoleFont, SurroundingMines + ": " + (isMine ? "T" : "F"), a, c);
             spriteBatch.End();
             base.Draw(gameTime);
@@ -86,11 +95,33 @@ namespace Minesweeper_XNA
 
         public void MinePressed(GameTime gameTime)
         {
-
+            if (mineState == Minesweeper_XNA.MineState.Hidden ||
+                mineState == Minesweeper_XNA.MineState.HiddenQuestion)
+                mineState = Minesweeper_XNA.MineState.HiddenSelected;
         }
 
-        public void MineReleased(GameTime gameTime)
+        public void MineReleased(GameTime gameTime, bool sameMine)
         {
+            if (mineState == Minesweeper_XNA.MineState.HiddenSelected)
+            {
+                if (IsMine)
+                {
+                    mineState = Minesweeper_XNA.MineState.UncoveredMine;
+                }
+                else if (surroundingMines > 0)
+                {
+                    mineState = Minesweeper_XNA.MineState.UncoveredNumber;
+                }
+                else
+                {
+                    mineState = Minesweeper_XNA.MineState.UncoveredNone;
+                    // TODO: uncover neihboring tiles w/ 0 or number too
+                }
+            }
+            else if (!sameMine)
+            {
+                mineState = Minesweeper_XNA.MineState.Hidden;
+            }
         }
 
         public void MineFlagged(GameTime gameTime)
@@ -113,6 +144,7 @@ namespace Minesweeper_XNA
         Hidden,
         HiddenFlaged,
         HiddenQuestion,
+        HiddenSelected,
         UncoveredNumber,
         UncoveredMine,
         UncoveredNone

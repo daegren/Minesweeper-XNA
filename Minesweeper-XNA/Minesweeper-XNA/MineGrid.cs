@@ -21,6 +21,9 @@ namespace Minesweeper_XNA
         private bool isRightButtonPressed = false;
         private bool isLeftButtonPressed = false;
 
+        private Mine selectedMine;
+        private Mine tempMine;
+
         private SpriteBatch spriteBatch;
 
         public MineGrid(Game game)
@@ -31,7 +34,8 @@ namespace Minesweeper_XNA
 
         public override void Initialize()
         {
-            
+            selectedMine = new Mine(Game, false, 0, 0);
+            tempMine = selectedMine;
             // initialize 3x3 grid with 1 mine
             //Random rnd = new Random();
             int[] mine1 = { 2, 1 };
@@ -107,11 +111,22 @@ namespace Minesweeper_XNA
                 // change state to down but not pressed
                 // dont if there its flagged
                 if (m != null)
+                {
                     m.MinePressed(gameTime);
+                    selectedMine = m;
+                }
             }
             else if (state.LeftButton == ButtonState.Released)
             {
                 // uncover current grid item unless cursor is no longer over grid item
+                if (m == selectedMine)
+                {
+                    m.MineReleased(gameTime, true);
+                    selectedMine = tempMine;
+                }
+                else if (m != null)
+                    m.MineReleased(gameTime, false);
+                
             }
             if (state.RightButton == ButtonState.Pressed)
             {
