@@ -151,15 +151,6 @@ namespace Minesweeper_XNA
             base.Update(gameTime);
         }
 
-        public override void Draw(GameTime gameTime)
-        {
-            base.Draw(gameTime);
-            int gridSize = hiddenGridItem.Height;
-            spriteBatch.Begin();
-
-            spriteBatch.End();
-        }
-
         private int surroundingMines(int x, int y)
         {
             return 0;
