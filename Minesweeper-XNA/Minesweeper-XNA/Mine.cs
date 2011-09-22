@@ -16,6 +16,7 @@ namespace Minesweeper_XNA
         private Texture2D hiddenTexture;
         private Texture2D visibleTexture;
         private SpriteFont consoleFont;
+        private SpriteFont numberFont;
         private Texture2D flagTexture;
         private Texture2D questionTexture;
         private Texture2D mineTexture;
@@ -56,6 +57,7 @@ namespace Minesweeper_XNA
             questionTexture = cm.Load<Texture2D>("grid-question");
             mineTexture = cm.Load<Texture2D>("mine");
             consoleFont = cm.Load<SpriteFont>("console");
+            numberFont = cm.Load<SpriteFont>("number");
             base.LoadContent();
         }
 
@@ -89,6 +91,13 @@ namespace Minesweeper_XNA
             Vector2 a = new Vector2(gridPos.X + 8, gridPos.Y + 8);
             if (isMine && mineState == Minesweeper_XNA.MineState.UncoveredMine)
                 spriteBatch.Draw(mineTexture, a, Color.White);
+            if (mineState == Minesweeper_XNA.MineState.UncoveredNumber)
+            {
+                Vector2 offset = numberFont.MeasureString(surroundingMines.ToString());
+                Vector2 p = new Vector2((tex.Width / 2 - offset.X / 2) + gridPos.X, 
+                                        (tex.Height / 2 - offset.Y / 2) + gridPos.Y);
+                spriteBatch.DrawString(numberFont, surroundingMines.ToString(), p, c);
+            }
             spriteBatch.DrawString(consoleFont, SurroundingMines + ": " + (isMine ? "T" : "F"), a, c);
             spriteBatch.End();
             base.Draw(gameTime);
@@ -102,11 +111,12 @@ namespace Minesweeper_XNA
         }
 
         /// <summary>
-        /// Tells the mine it's been released
+        /// Tells the tile the input device has been released
         /// </summary>
         /// <param name="gameTime">the gameTime object of the update call</param>
         /// <param name="sameMine">True if the mine should be revealed</param>
-        public void MineReleased(GameTime gameTime, bool sameMine)
+        /// <returns>Whether or not the tile is a 0 tile</returns>
+        public bool MineReleased(GameTime gameTime, bool sameMine)
         {
             if (mineState == Minesweeper_XNA.MineState.HiddenSelected)
             {
@@ -125,9 +135,10 @@ namespace Minesweeper_XNA
                 else
                 {
                     mineState = Minesweeper_XNA.MineState.UncoveredNone;
-                    // TODO: uncover neihboring tiles w/ 0 or number too
+                    return true;
                 }
             }
+            return false;
         }
 
         public void MineFlagged(GameTime gameTime)
