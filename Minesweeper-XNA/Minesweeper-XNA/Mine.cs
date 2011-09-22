@@ -68,11 +68,12 @@ namespace Minesweeper_XNA
             else if (mineState == MineState.HiddenFlaged)
                 tex = flagTexture;
             else if (mineState == Minesweeper_XNA.MineState.UncoveredNone ||
+                     mineState == Minesweeper_XNA.MineState.UncoveredNumber ||
                      mineState == Minesweeper_XNA.MineState.UncoveredMine ||
                      mineState == Minesweeper_XNA.MineState.HiddenSelected)
                 tex = visibleTexture;
             else if (mineState == Minesweeper_XNA.MineState.HiddenQuestion)
-                tex = questionTexture;            
+                tex = questionTexture;
 
             if (surroundingMines == 1)
                 c = Color.Blue;
@@ -82,7 +83,7 @@ namespace Minesweeper_XNA
                 c = Color.Red;
             else if (surroundingMines == 4)
                 c = Color.DarkBlue;
-                    
+
             spriteBatch.Begin();
             spriteBatch.Draw(tex, gridPos, Color.White);
             Vector2 a = new Vector2(gridPos.X + 8, gridPos.Y + 8);
@@ -100,11 +101,20 @@ namespace Minesweeper_XNA
                 mineState = Minesweeper_XNA.MineState.HiddenSelected;
         }
 
+        /// <summary>
+        /// Tells the mine it's been released
+        /// </summary>
+        /// <param name="gameTime">the gameTime object of the update call</param>
+        /// <param name="sameMine">True if the mine should be revealed</param>
         public void MineReleased(GameTime gameTime, bool sameMine)
         {
             if (mineState == Minesweeper_XNA.MineState.HiddenSelected)
             {
-                if (IsMine)
+                if (!sameMine)
+                {
+                    mineState = Minesweeper_XNA.MineState.Hidden;
+                }
+                else if (IsMine)
                 {
                     mineState = Minesweeper_XNA.MineState.UncoveredMine;
                 }
@@ -117,10 +127,6 @@ namespace Minesweeper_XNA
                     mineState = Minesweeper_XNA.MineState.UncoveredNone;
                     // TODO: uncover neihboring tiles w/ 0 or number too
                 }
-            }
-            else if (!sameMine)
-            {
-                mineState = Minesweeper_XNA.MineState.Hidden;
             }
         }
 
