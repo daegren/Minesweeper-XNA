@@ -122,6 +122,11 @@ namespace Minesweeper_XNA
                         selectedMine = m; // set new mine to selected
                     }
                 }
+                else
+                {
+                    selectedMine.MineReleased(gameTime, false);
+                    selectedMine = tempMine;
+                }
             }
             else if (state.LeftButton == ButtonState.Released)
             {
