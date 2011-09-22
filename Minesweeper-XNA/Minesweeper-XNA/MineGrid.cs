@@ -13,7 +13,7 @@ namespace Minesweeper_XNA
         int gridSize = 5;
         int tileSize = 64;
         int gridOffset = 50;
-        private Mine[,] grid = new Mine[6,6];
+        private Mine[,] grid = new Mine[6, 6];
         private Texture2D uncoveredGridItem;
         private Texture2D hiddenGridItem;
         private SpriteFont font;
@@ -23,13 +23,14 @@ namespace Minesweeper_XNA
 
         private Mine selectedMine;
         private Mine tempMine;
+        private String selectedMineState = "";
 
         private SpriteBatch spriteBatch;
 
         public MineGrid(Game game)
             : base(game)
         {
-            
+
         }
 
         public override void Initialize()
@@ -41,7 +42,7 @@ namespace Minesweeper_XNA
             int[] mine1 = { 2, 1 };
             int[] mine2 = { 4, 1 };
             int[] mine3 = { 1, 3 };
-            int[] mine4 = { 4, 4 };            
+            int[] mine4 = { 4, 4 };
 
             for (int i = 0; i <= gridSize; i++)
             {
@@ -102,53 +103,53 @@ namespace Minesweeper_XNA
             // figure out position of mouse click
             int x = (state.X - gridOffset) / tileSize;
             int y = (state.Y - gridOffset) / tileSize;
+            if (state.X - gridOffset < gridSize)
+                x = -1;
+            if (state.Y - gridOffset < gridSize)
+                y = -1;
             Mine m = null;
-            if (!(x < 0 || x > gridSize || y < 0 || y > gridSize))
+            if ((x >= 0 && x <= gridSize) && (y >= 0 && y <= gridSize))
                 m = grid[x, y];
 
             if (state.LeftButton == ButtonState.Pressed)
             {
-                // change state to down but not pressed
-                // dont if there its flagged
-                if (m != null)
+                if (m != null) // if a mine is selected
                 {
-                    m.MinePressed(gameTime);
-                    selectedMine = m;
-                    isLeftButtonPressed = true;
+                    if (selectedMine != m) // if the selected mine is not the same one from last update
+                    {
+                        selectedMine.MineReleased(gameTime, false); // hide old mine
+                        m.MinePressed(gameTime); // press new mine
+                        selectedMine = m; // set new mine to selected
+                    }
                 }
             }
             else if (state.LeftButton == ButtonState.Released)
             {
-                // uncover current grid item unless cursor is no longer over grid item
-                if (m == selectedMine && isLeftButtonPressed)
+                if (m == null) // if no mine selected
                 {
-                    m.MineReleased(gameTime, true);
-                    selectedMine = tempMine;
+                    selectedMine.MineReleased(gameTime, false); // hide selected mine
                 }
-                else if (m != null)
-                    m.MineReleased(gameTime, false);
-                
-            }
-            if (state.RightButton == ButtonState.Pressed)
-            {
-                isRightButtonPressed = true;
-            }
-            if (state.RightButton == ButtonState.Released)
-            {
-                // place flag
-                if (m != null && isRightButtonPressed)
+                else if (selectedMine == m) // if selected mine is same as current mine
                 {
-                    m.MineFlagged(gameTime);
-                    isRightButtonPressed = false;
+                    m.MineReleased(gameTime, true); // show mine
                 }
+                selectedMine = tempMine; // reset selected mine
             }
-            if (state.LeftButton == ButtonState.Released &&
-                     state.RightButton == ButtonState.Released)
-            {
-                // if number matches number of flags, uncover surrounding grid items
-            }
+            if (m == null)
+                selectedMineState = selectedMine.MineState.ToString();
+            else
+                selectedMineState = m.MineState.ToString();
 
             base.Update(gameTime);
+        }
+
+        public override void Draw(GameTime gameTime)
+        {
+            spriteBatch.Begin();
+            spriteBatch.DrawString(font, selectedMineState, new Vector2(500, 120), Color.White);
+            spriteBatch.End();
+
+            base.Draw(gameTime);
         }
 
         private int surroundingMines(int x, int y)
