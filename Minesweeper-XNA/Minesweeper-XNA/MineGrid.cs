@@ -140,6 +140,8 @@ namespace Minesweeper_XNA
                 }
                 selectedMine = tempMine; // reset selected mine
             }
+
+            // DEBUG
             if (m == null)
                 selectedMineState = selectedMine.MineState.ToString();
             else
